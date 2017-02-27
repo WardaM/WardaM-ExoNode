@@ -8,10 +8,59 @@ var express = require('express'),
 
     users = []; // Bdd par défaut vide
 
+  
+	var client = mysql.createConnection({
+	  host     : 'localhost',
+	  user     : 'root',
+	  password : '',
+	  database : 'animalerie',
+	});
+  
+// On se connecte à la base de données. Un programme node.js ne possède qu'un
+// seul thread d'exécution, nous n'avons donc pas besoin de nous inquiéter
+// des problèmes de concurrence.
+client.connect();
+client.query('SELECT * from clients', function(err, rows, fields) {
+  if (!err)
+    console.log('The solution is: ', rows);
+    fichierBdd()
+  else
+    console.log('Error while performing Query.');	
+});
+
+client.end();
+
+
+
+
     
 server.listen(3001,"0.0.0.0"); // Lancement du serveur
 
+//récupérer les données
+// parse application/x-www-form-urlencoded 
+app.use(body.urlencoded({ extended: false }))
+//récupérer les données, parser les données stockées dans le body
 
+
+// parse application/json 
+app.use(body.json())
+
+
+// /vérifier si le fichier existe
+//meme nom que le fs.writefile en bas avec le nom de la route, 2ème paramètre : mode de lecture 'r' va juste s'ouvrir en mode de lecture, récupérer la data d'ouverture https://www.tutorialspoint.com/nodejs/nodejs_file_system.htm
+ fs.open('bdd.json', 'r', (err, fd) => {
+ 	//fd : la donnée d'ouverture du fichier, file descriptor
+ 	//http://stackoverflow.com/questions/36771266/what-is-the-use-of-fd-file-descriptor-in-node-js
+
+         if (!err) {
+             var data = fs.readFileSync('bdd.json');
+            // console.log("Synchronous read: " + data.toString());
+            users = JSON.parse(data.toString());
+            // console.log(users);
+         }
+    });
+
+//a chaque fois que j'ajoute un utilisateur il s'enregistre dans le fichier
 
 /********** ROUTE **************/
 
@@ -28,6 +77,8 @@ app.post('/register', function(req, res){
 
 
 });
+
+
 
 // route pour connection
 /* Login - POST */
@@ -61,6 +112,26 @@ app.post('/login', function(req, res){
         res.send(error);
 });
 
+// route pour mot de passe oublié
+
+// app.put('/login', function (req, res){
+// 	users.forEach(function(user){
+// 		var theUser = {};
+
+// 		//var mot de passe oublié dans lequel on va stocker le mot de passe random a renvoyer
+// 		var newMdp = 
+// 		if(req.body.phone){
+// 		//s'il reconnait le telephone d'un utilisateur
+// 			if(req.body.phone == user.phone){
+
+// 				//On lui envoit un nouveau mot de passe, return du new mdp random
+// 				res.send(newMdp);
+// 			}
+// 		}
+// 	})
+
+// });
+
 
 // route pour mot de passe oublié
 
@@ -86,7 +157,24 @@ app.put('/login', function(req, res){
     
 });
 
+//suppression utilisateur
+// app.delete('/login', function (req, res){
+// 	var theUser = {};
 
+// 	users.forEach(function(user){ // fetchAll - Foreach
+//         // si le phone poster par l'utilisateur (y en a un)
+//         if (req.body.phone){
+//             // un des phone de notre Jason est egal au phone poster par l'utilisateur
+//             if(user.phone == req.body.phone){
+//             theUser = user;
+//             delete req.body;
+                
+//         }else{
+//             console.log('pas de supression/erreur')
+//         };
+//     };
+//     fichierBdd();
+// });
 
 app.delete('/login', function (req, res){
 	var theUser = {};
@@ -103,7 +191,6 @@ app.delete('/login', function (req, res){
     fichierBdd();
     res.send(theUser);
 });
-
 
 
 
@@ -135,6 +222,25 @@ app.put('/editInfomation', function(req, res){
 
 
 
+// //écrire dans un fichier
+// app.post('/file', function(req,res){
+
+// 	//fs pour communiquer avec le systeme
+// 	// fs.writeFile(filename, data, [encoding], callback)
+// 	//fs.writeFile("/chemin.nomdufichier.txt", "data du fichier que l'on passe en paramètre", options: encodages etc. puis callback(en cas d'erreurs))
+// 	var error = {"error":true,"message":"Fail"};
+
+// 	var name = JSON.stringify(users); //(contenu du fichier => name, le titre "message.text")
+// 	//user tableau d'objets à convertir en JSON text
+
+// 	fs.writeFile("bdd.json", name, (err) => {
+
+// 	    if(err) res.send(error);
+// 	    res.send({"error":false, "message":"saved!"});
+// 	});
+
+// });
+
 app.post('/file', function(req, res){
         if (fichierBdd())
             res.send({"error":false,"message":"It\'s saved!"});
@@ -158,7 +264,3 @@ function fichierBdd(){
          }
     });
 };
-
-
-
-

@@ -23,7 +23,7 @@ app.use(body.json());
 /********************************** Route **********************************/
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/index.html');
-    console.log(users);
+    
 });
 
 
@@ -38,23 +38,38 @@ app.get('/', function(req, res){
 
 app.post('/', function(req, res){
     var users =[];
-  
-    users.push(req.body); // Insert Into
+    users.push(req.body);
+    var newUsers = "";
     var stringUser = JSON.stringify(users)
-    //1st step : remplacer le [ par ,
-    var newUsers = stringUser.replace("[", ",");
-    //2eme step : supprimer le ]
-    var newUsers = newUsers.replace("]", "");
-    console.log(stringUser)
-    console.log(newUsers)
+    var option = 0;
 
-    //pointer vers la fin et remonter d'un caractère -1
+   if(fsp.statSync("bdd2.json").size > 8){
+        
+        //1st step : remplacer le [ par ,
+        var newUsers = stringUser.replace("[", ",");
+        //2eme step : supprimer le ]
+        newUsers = newUsers.replace("]", "");
+        option = -1;
+        
+    }else{
+        newUsers = stringUser;
+    }
 
-    setFichierBdd('bdd2.json',newUsers);
-    Promise.race(promesses2).then(function (value){
-    res.send(stringUser);
-    });  
+   setPile("bdd2.json",newUsers, option);
+    Promise.race(promesses2).then(function (setUsers){
+      res.send(users);
+    });
+      
 });
+
+
+
+
+
+
+
+
+
 
 
 
@@ -64,7 +79,7 @@ app.put('/', function(req, res){
     getFichierBdd2('bdd2.json');
     
 
-   Promise.race(promesses).then(function (users) {
+ Promise.race(promesses).then(function (users) {
         
         users.forEach(function(user){
             if (user.id == 3){
@@ -74,16 +89,16 @@ app.put('/', function(req, res){
             usersBis.push(user); // Insert Into  
         });
 
-       var setUsers=setFichierBdd('bdd2.json',usersBis);
+     var setUsers=setFichierBdd('bdd2.json',usersBis);
         Promise.race(promesses2).then(function (setUsers){
             res.send(usersBis);
         });
 
-   }).catch(function (err) {
+ }).catch(function (err) {
         console.error('Une erreur est survenue lors de l\'accès aux scripts');
     });
 
-   
+ 
 });
 
 // app.put('/', function(req, res){
@@ -124,13 +139,10 @@ function setFichierBdd(files,vars){
     var ma_promesse =   fsp.appendFile(files, JSON.stringify(vars))
 
 
-    // On demande une promesse sur la lecture du fichier
+  // On demande une promesse sur la lecture du fichier
     promesses2.push(ma_promesse);
     // promesses2.push(fsp.writeFile(files, JSON.stringify(vars)));
 };
-
-
-
 
 function getFichierBdd2(fileName){
     
@@ -139,19 +151,6 @@ function getFichierBdd2(fileName){
     // });
     var ma_promesse = fsp.readFile(fileName, { encoding: 'utf8' }).then(JSON.parse); // On demande une promesse sur la lecture du fichier
     promesses.push(ma_promesse);
-   
-};
-
-
-
-
-function setPile(fileName){
-    
-fsp.writeFile('/tmp/hello1.txt', 'hello world')
-  .then(function(){
-    return fsp.readFile('/tmp/hello1.txt', {encoding:'utf8'});
-  })
-  .then(function(contents){});
    
 };
 
@@ -169,6 +168,41 @@ function getFichierBdd(files){
              }else
                  console.log("tgt")
         });
-
-  
 };
+
+
+function setPile(files,newUsers, option = 0){
+    // j'ouvre le fichier bdd.json
+    // dataBdd sert a stocker les infos du fichier bdd.json, est utilisé par fs.open aucune utilité pour nous
+    
+    // var ma_promesse =   fsp.writeFile(files, JSON.stringify(vars))
+    //fsp.appendFile : modifier le fichier pour y ajouter les données
+
+
+
+       // fs.open(files, 'a+', (err, dataBdd) => {
+        //      if (!err)
+        //         promesses2.push(fsp.writeSync(files,newUsers, option));
+        // });
+
+               promesses2.push(fsp.writeSync(files,newUsers,option));
+
+
+
+  //  console.log(option)
+   //  var ma_promesse =   fsp.writeSync(files, newUsers, option)
+
+
+  // // On demande une promesse sur la lecture du fichier
+   //  promesses2.push(ma_promesse);
+    // promesses2.push(fsp.writeFile(files, JSON.stringify(vars)));
+   
+};
+function write(data){
+    fs.writeFile('bdd2.json', JSON.stringify(data), (err) => {
+        // si il y a une erreur envoi de la variable error declaré plus haut
+        if(err) return false;
+        // sinon envoi de la variable avec le message
+        return true;
+    });
+ }

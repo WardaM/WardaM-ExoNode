@@ -10,6 +10,12 @@ server.listen(3002); // Lancement du serveur
 
 
 
+
+
+
+
+
+
 /********************************** Route **********************************/
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/index.html');

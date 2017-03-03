@@ -64,16 +64,6 @@ app.post('/', function(req, res){
 
 
 
-
-
-
-
-
-
-
-
-
-
 app.put('/', function(req, res){
     usersBis = []; // Bdd
     getFichierBdd2('bdd2.json');
